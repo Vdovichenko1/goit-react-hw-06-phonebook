@@ -1,17 +1,22 @@
-import { useState } from 'react';
 import { nanoid } from 'nanoid';
-import { ToastContainer, toast } from 'react-toastify';
+import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ContactForm from './ContactForm';
 import Filter from './Filter';
 import ContactList from './ContactList';
-import useLocalStorage from './useLocalStorage';
+import { useDispatch, useSelector } from 'react-redux';
+import {
+  addContacts,
+  deleteContacts,
+  filterContacts,
+} from 'redux/contactsSlice';
 
-const LS_KEY = 'reader_item';
+// const LS_KEY = 'reader_item';
 
 export default function App() {
-  const [contacts, setContacts] = useLocalStorage(LS_KEY, []);
-  const [filter, setFilter] = useState('');
+  const contacts = useSelector(state => state.contacts);
+  const filter = useSelector(state => state.filter);
+  const dispatch = useDispatch();
 
   const fromSubmitHandler = ({ name, number }) => {
     const todo = {
@@ -19,16 +24,11 @@ export default function App() {
       name,
       number,
     };
-    const findName = contacts.find(
-      e => e.name.toLowerCase() === todo.name.toLowerCase()
-    );
-    findName
-      ? toast.error(`${todo.name} is already in contacts`)
-      : setContacts([todo, ...contacts]);
+    dispatch(addContacts(todo));
   };
 
   const changeFilter = e => {
-    setFilter(e.currentTarget.value);
+    dispatch(filterContacts(e.currentTarget.value));
   };
   const getVisibleContacts = () => {
     const normalizedFilter = filter.toLowerCase();
@@ -37,9 +37,11 @@ export default function App() {
     );
   };
 
-  const deleteContact = contactId => {
-    setContacts(state => state.filter(todo => todo.id !== contactId));
+  const deleteContact = e => {
+    dispatch(deleteContacts(e));
   };
+
+  // const full = getVisibleContacts()
 
   return (
     <>
